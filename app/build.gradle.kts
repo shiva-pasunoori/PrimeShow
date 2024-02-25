@@ -40,6 +40,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -83,4 +84,12 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.okhttp3:okhttp:4.11.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.10.0")
+
+    // image load
+    implementation("io.coil-kt:coil-compose:2.4.0")
+
+    // Extended Icons
+    implementation("androidx.compose.material:material-icons-extended:1.6.2")
+
+    implementation("androidx.palette:palette-ktx:1.0.0")
 }

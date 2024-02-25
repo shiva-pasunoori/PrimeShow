@@ -1,4 +1,4 @@
-package com.venya.primeshow.ui.theme
+package com.venya.primeshow.pesentation.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
