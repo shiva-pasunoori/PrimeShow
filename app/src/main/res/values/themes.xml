@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
-    <style name="Theme.PrimeShow" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.PrimeShow" parent="android:Theme.Material.Light.NoActionBar" >
+        <item name="android:windowIsTranslucent">true</item>
+    </style>
+
+    <style name="Theme.MyApp.SplashScreen" parent="Theme.PrimeShow">
+        <item name="android:windowSplashScreenBackground" tools:targetApi="s">@color/white</item>
+        <!-- Specify your app's branding icon for the splash screen -->
+        <item name="android:windowSplashScreenAnimatedIcon" tools:targetApi="s">@drawable/prime_show</item>
+        <!-- Optional: Control the icon animation -->
+        <item name="android:windowSplashScreenAnimationDuration" tools:targetApi="s">500</item>
+        <!-- Set the background color -->
+        <item name="android:windowBackground">@color/white</item>
+    </style>
+
 </resources>

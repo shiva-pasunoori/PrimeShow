@@ -6,9 +6,13 @@ import com.venya.primeshow.data.model.response.Movie
 import com.venya.primeshow.domain.repository.MoviesRepository
 import com.venya.primeshow.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -16,6 +20,7 @@ import javax.inject.Inject
  * Created by Shiva Pasunoori on 25,February,2024
  */
 
+@OptIn(FlowPreview::class)
 @HiltViewModel
 class MovieListViewModel @Inject constructor(private val moviesRepository: MoviesRepository) : ViewModel()
 {
@@ -29,36 +34,38 @@ class MovieListViewModel @Inject constructor(private val moviesRepository: Movie
     private var _stateSearchText = MutableStateFlow("")
     val stateSearchText = _stateSearchText.asStateFlow()
 
+    private val _searchQuery = MutableStateFlow("")
+
     init {
         fetchTrendingMovies()
+        viewModelScope.launch {
+            _searchQuery
+                .filter { query -> query.length >= 3 }
+                .debounce(500)
+                .collectLatest { query ->
+                    searchMovies(query)
+                }
+        }
     }
 
-    fun fetchTrendingMovies(query: String = "") {
+    fun setSearchQuery(query: String) {
+        _searchQuery.value = query
+    }
+
+    fun fetchTrendingMovies() {
         viewModelScope.launch {
             moviesRepository.getTrendingMoviesList().collect { moviesResource ->
                 _moviesList.value = moviesResource
             }
         }
     }
-    fun onActiveChange(active: Boolean) {
-        _stateSearchActive.value = active
-    }
 
-    fun onQueryChange(query: String) {
-        _stateSearchText.value = query
-    }
-
-    fun onSearch(query: String)  {
-        fetchTrendingMovies(query)
-    }
-
-    fun clearSearch() {
-        _stateSearchText.value = ""
-    }
-
-    fun closeSearch() {
-        _stateSearchText.value = ""
-        // _moviesList.value = DataStateWrapper.Idle()
-        _stateSearchActive.value = false
+    fun searchMovies(query: String)
+    {
+        viewModelScope.launch {
+            moviesRepository.searchMovies(query).collect { moviesResource ->
+                _moviesList.value = moviesResource
+            }
+        }
     }
 }

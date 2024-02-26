@@ -1,5 +1,6 @@
 package com.venya.primeshow.pesentation.utils.screens
 
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -39,10 +40,12 @@ import coil.request.ImageRequest
 import coil.size.Size
 import com.venya.primeshow.R
 import com.venya.primeshow.data.model.response.Movie
+import com.venya.primeshow.pesentation.utils.common.NoInternetConnectionMessage
 import com.venya.primeshow.pesentation.utils.common.RatingBar
 import com.venya.primeshow.pesentation.viewmodel.MovieDetailsViewModel
 import com.venya.primeshow.utils.Constants
 import com.venya.primeshow.utils.Resource
+import com.venya.primeshow.utils.checkIfHasNetwork
 import java.util.Locale
 
 /**
@@ -50,8 +53,12 @@ import java.util.Locale
  */
 
 @Composable
-fun DetailsScreen(movieDetailsViewModel: MovieDetailsViewModel) {
+fun DetailsScreen(applicationContext: Context, movieDetailsViewModel: MovieDetailsViewModel) {
 
+    if(applicationContext.checkIfHasNetwork())
+    {
+        NoInternetConnectionMessage()
+    }
     val moviesDetailsState by movieDetailsViewModel.movieDetails.collectAsState()
 
     when (moviesDetailsState) {
@@ -63,6 +70,8 @@ fun DetailsScreen(movieDetailsViewModel: MovieDetailsViewModel) {
         is Resource.Error -> ErrorView(
             message = moviesDetailsState.message ?: "An unknown error occurred"
         )
+
+        else -> {}
     }
 }
 
@@ -184,7 +193,7 @@ fun detailsScreenBody(movie: Movie) {
                         Text(
                             modifier = Modifier.padding(start = 4.dp),
                             text = movie.voteAverage.toString().take(3),
-                            color = Color.LightGray,
+                            color = Color.DarkGray,
                             fontSize = 14.sp,
                             maxLines = 1,
                         )

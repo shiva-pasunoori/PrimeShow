@@ -34,6 +34,9 @@ data class Movie(
     @field:SerializedName("title")
     val title: String? = null,
 
+    @field:SerializedName("name")
+    val name: String? = null,
+
     @field:SerializedName("genre_ids")
     val genreIds: List<Int?>? = null,
 

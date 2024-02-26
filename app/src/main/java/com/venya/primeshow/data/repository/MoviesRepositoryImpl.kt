@@ -6,6 +6,9 @@ import com.venya.primeshow.domain.repository.MoviesRepository
 import com.venya.primeshow.utils.Resource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import okio.IOException
+import retrofit2.HttpException
+import retrofit2.http.Query
 import javax.inject.Inject
 
 /**
@@ -26,14 +29,31 @@ class MoviesRepositoryImpl @Inject constructor(private val apiService: ApiServic
                     return@flow
                 }
             } catch (e: Exception) {
-                emit(Resource.Error("An error occurred: ${e.message}"))
+                emit(handleErrorMessage(e))
                 e.printStackTrace()
                 return@flow
             }
-            emit(Resource.Loading(false))
         }
     }
 
+    private fun <T> handleErrorMessage(e : Exception) : Resource<T>
+    {
+        return when (e) {
+            is IOException -> {
+                // This usually indicates a network connectivity issue (e.g., no internet connection)
+                Resource.Error("No internet")
+            }
+            is HttpException -> {
+                Resource.Error("Something went wrong")
+            }
+            else -> {
+                Resource.Error("Unknown error, Please try after some time")
+            }
+        }
+    }
+
+    32
+    ';lkj6h5'
     override suspend fun getMovieDetails(id: Int): Flow<Resource<Movie>> = flow {
         emit(Resource.Loading(true))
         try {
@@ -46,10 +66,29 @@ class MoviesRepositoryImpl @Inject constructor(private val apiService: ApiServic
                 return@flow
             }
         } catch (e: Exception) {
-            emit(Resource.Error("An error occurred: ${e.message}"))
+            emit(handleErrorMessage(e))
             e.printStackTrace()
             return@flow
         }
-        emit(Resource.Loading(false))
+    }
+
+    override suspend fun searchMovies(query: String): Flow<Resource<List<Movie>>> {
+        return flow {
+            emit(Resource.Loading(true))
+            try {
+                val response = apiService.searchMovies(query) // Assuming this method exists and returns a list of movies
+                if (response.isSuccessful && response.body() != null) {
+                    emit(Resource.Success(response.body()!!.results))
+                    return@flow
+                } else {
+                    emit(Resource.Error("An error occurred: ${response.message()}"))
+                    return@flow
+                }
+            } catch (e: Exception) {
+                emit(handleErrorMessage(e))
+                e.printStackTrace()
+                return@flow
+            }
+        }
     }
 }

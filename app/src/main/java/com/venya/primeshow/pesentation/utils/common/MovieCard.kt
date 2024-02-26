@@ -84,7 +84,7 @@ fun MovieCard(movie: Movie,navController: NavController)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(250.dp)
+                    .height(200.dp)
                     .clip(RoundedCornerShape(22.dp))
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
@@ -116,14 +116,17 @@ fun MovieCard(movie: Movie,navController: NavController)
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        movie.title?.let {
-            Text(
-                modifier = Modifier.padding(start = 16.dp, end = 8.dp),
-                text = it,
-                color = Color.White,
-                fontSize = 15.sp,
-                maxLines = 1
-            )
+        var title = movie.title?:movie.name
+        title.let {
+            if (it != null) {
+                Text(
+                    modifier = Modifier.padding(start = 16.dp, end = 8.dp),
+                    text = it,
+                    color = Color.White,
+                    fontSize = 15.sp,
+                    maxLines = 1
+                )
+            }
         }
 
         Row (

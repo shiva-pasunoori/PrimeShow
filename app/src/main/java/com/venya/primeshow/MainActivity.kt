@@ -17,9 +17,11 @@ import androidx.navigation.navArgument
 import com.venya.primeshow.pesentation.viewmodel.MovieListViewModel
 import com.venya.primeshow.pesentation.utils.screens.ShowsScreen
 import com.venya.primeshow.pesentation.ui.theme.PrimeShowTheme
+import com.venya.primeshow.pesentation.utils.common.NoInternetConnectionMessage
 import com.venya.primeshow.pesentation.utils.screens.DetailsScreen
 import com.venya.primeshow.pesentation.viewmodel.MovieDetailsViewModel
 import com.venya.primeshow.utils.Screen
+import com.venya.primeshow.utils.checkIfHasNetwork
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -39,7 +41,6 @@ class MainActivity : ComponentActivity() {
                     ) {
                         composable(route = Screen.showsScreen.route) {
                             val movieListViewModel = hiltViewModel<MovieListViewModel>()
-                            movieListViewModel.fetchTrendingMovies()
                             ShowsScreen(
                                 navController = navController,
                                 movieListViewModel = movieListViewModel
@@ -51,7 +52,7 @@ class MainActivity : ComponentActivity() {
                             )
                         ) { backStackEntry ->
                             val movieDetailsViewModel = hiltViewModel<MovieDetailsViewModel>()
-                            DetailsScreen(movieDetailsViewModel)
+                            DetailsScreen(applicationContext,movieDetailsViewModel)
                         }
                     }
                 }

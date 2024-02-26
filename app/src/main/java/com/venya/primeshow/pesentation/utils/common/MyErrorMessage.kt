@@ -9,9 +9,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 /**
  * Created by Shiva Pasunoori on 25,February,2024
@@ -19,15 +22,18 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun MyErrorMessage(message: String) {
 
-    Box(modifier = Modifier.fillMaxSize(),
+    var color =  Color.Gray
+
+    Box(
+        modifier = Modifier.fillMaxSize().padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(text = message,
-            style = TextStyle(
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.error
-            ),
-            modifier = Modifier.wrapContentSize().padding(all = 8.dp)
+        Text(
+            text = message,
+            style = MaterialTheme.typography.titleLarge,
+            color = Color.DarkGray,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(top = 18.dp)
         )
     }
 }
