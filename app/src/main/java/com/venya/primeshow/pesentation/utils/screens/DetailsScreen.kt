@@ -5,6 +5,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -32,20 +34,21 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Size
 import com.venya.primeshow.R
 import com.venya.primeshow.data.model.response.Movie
-import com.venya.primeshow.pesentation.utils.common.NoInternetConnectionMessage
+import com.venya.primeshow.pesentation.utils.common.MovieCard
 import com.venya.primeshow.pesentation.utils.common.RatingBar
 import com.venya.primeshow.pesentation.viewmodel.MovieDetailsViewModel
 import com.venya.primeshow.utils.Constants
 import com.venya.primeshow.utils.Resource
-import com.venya.primeshow.utils.checkIfHasNetwork
 import java.util.Locale
 
 /**
@@ -53,18 +56,21 @@ import java.util.Locale
  */
 
 @Composable
-fun DetailsScreen(applicationContext: Context, movieDetailsViewModel: MovieDetailsViewModel) {
+fun DetailsScreen(
+    navController: NavHostController,
+    applicationContext: Context,
+    movieDetailsViewModel: MovieDetailsViewModel,
+) {
 
-    if(applicationContext.checkIfHasNetwork())
-    {
-        NoInternetConnectionMessage()
-    }
+
     val moviesDetailsState by movieDetailsViewModel.movieDetails.collectAsState()
+
+    val similarMoviesDetailsState by movieDetailsViewModel.similarMoviesList.collectAsState()
 
     when (moviesDetailsState) {
         is Resource.Loading -> LoadingView()
         is Resource.Success -> moviesDetailsState.data?.let {
-            detailsScreenBody(it)
+            detailsScreenBody(it,similarMoviesDetailsState,navController)
         }
 
         is Resource.Error -> ErrorView(
@@ -76,7 +82,11 @@ fun DetailsScreen(applicationContext: Context, movieDetailsViewModel: MovieDetai
 }
 
 @Composable
-fun detailsScreenBody(movie: Movie) {
+fun detailsScreenBody(
+    movie: Movie,
+    similarMoviesDetailsState: Resource<List<Movie>>,
+    navController: NavHostController
+) {
     val backDropImageState = rememberAsyncImagePainter(
         model = ImageRequest.Builder(LocalContext.current)
             .data(Constants.IMAGE_BASE_URL + movie.backdropPath)
@@ -203,7 +213,7 @@ fun detailsScreenBody(movie: Movie) {
 
                     Text(
                         modifier = Modifier.padding(start = 16.dp),
-                        text = stringResource(R.string.language) +" "+ (movie.originalLanguage?.uppercase(
+                        text = stringResource(R.string.language) + " " + (movie.originalLanguage?.uppercase(
                             Locale.ROOT
                         ) ?: "")
                     )
@@ -212,7 +222,7 @@ fun detailsScreenBody(movie: Movie) {
 
                     Text(
                         modifier = Modifier.padding(start = 16.dp),
-                        text = stringResource(R.string.release_date) +" "+ movie.releaseDate
+                        text = stringResource(R.string.release_date) + " " + movie.releaseDate
                     )
 
                     Spacer(modifier = Modifier.height(10.dp))
@@ -246,7 +256,55 @@ fun detailsScreenBody(movie: Movie) {
             }
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        // Spacer(modifier = Modifier.height(8.dp))
 
+        if (similarMoviesDetailsState is Resource.Success) {
+
+            Text(
+                text = stringResource(id = R.string.similar_shows),
+                style = MaterialTheme.typography.titleMedium,
+                fontSize = 19.sp,
+                modifier = Modifier
+                    .padding(start = 16.dp, end = 16.dp, top = 26.dp),
+                textAlign = TextAlign.Start,
+            )
+
+            // Spacer(modifier = Modifier.height(8.dp))
+
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.onSecondary),
+
+                contentPadding = PaddingValues(vertical = 8.dp, horizontal = 8.dp),
+                content = {
+                    similarMoviesDetailsState.data?.size?.let {
+                        items(it) { index ->
+                            MovieCard(
+                                movie = similarMoviesDetailsState.data!![index],
+                                navController
+                            )
+                        }
+                    }
+                }
+            )
+        }
     }
+}
+
+@Composable
+fun similarMoviesList(movies: List<Movie>, navController: NavHostController) {
+
+    LazyRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.onSecondary),
+
+        contentPadding = PaddingValues(vertical = 8.dp, horizontal = 4.dp),
+        content = {
+            items(movies.size) { index ->
+                MovieCard(movie = movies[index], navController)
+            }
+        }
+    )
 }

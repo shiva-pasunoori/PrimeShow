@@ -22,4 +22,8 @@ interface ApiService
 
     @GET("search/movie")
     suspend fun searchMovies(@Query("query") query: String): Response<MovieListRes>
+
+    @GET("movie/{movie_id}/similar")
+    suspend fun getSimilarMoviesList(@Path("movie_id") movieId: Int) : Response<MovieListRes>
+
 }

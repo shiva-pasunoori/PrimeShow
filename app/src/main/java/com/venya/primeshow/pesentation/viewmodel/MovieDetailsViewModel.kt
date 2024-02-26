@@ -28,14 +28,26 @@ class MovieDetailsViewModel @Inject constructor(
 
     private val movieId = savedStateHandle.get<Int>("movieId")
 
+    private var _similarMoviesList = MutableStateFlow<Resource<List<Movie>>>(Resource.Loading())
+    val similarMoviesList: StateFlow<Resource<List<Movie>>> = _similarMoviesList.asStateFlow()
+
     init {
         fetchMovieDetails(movieId = movieId ?: -1)
+        similarMoviesList(movieId = movieId ?: -1)
     }
 
     private fun fetchMovieDetails(movieId: Int) {
         viewModelScope.launch {
             moviesRepository.getMovieDetails(movieId).collect { moviesResource ->
                 _movieDetails.value = moviesResource
+            }
+        }
+    }
+
+    fun similarMoviesList(movieId: Int) {
+        viewModelScope.launch {
+            moviesRepository.getSimilarMoviesList(movieId).collect { moviesResource ->
+                _similarMoviesList.value = moviesResource
             }
         }
     }

@@ -36,24 +36,6 @@ class MoviesRepositoryImpl @Inject constructor(private val apiService: ApiServic
         }
     }
 
-    private fun <T> handleErrorMessage(e : Exception) : Resource<T>
-    {
-        return when (e) {
-            is IOException -> {
-                // This usually indicates a network connectivity issue (e.g., no internet connection)
-                Resource.Error("No internet")
-            }
-            is HttpException -> {
-                Resource.Error("Something went wrong")
-            }
-            else -> {
-                Resource.Error("Unknown error, Please try after some time")
-            }
-        }
-    }
-
-    32
-    ';lkj6h5'
     override suspend fun getMovieDetails(id: Int): Flow<Resource<Movie>> = flow {
         emit(Resource.Loading(true))
         try {
@@ -88,6 +70,43 @@ class MoviesRepositoryImpl @Inject constructor(private val apiService: ApiServic
                 emit(handleErrorMessage(e))
                 e.printStackTrace()
                 return@flow
+            }
+        }
+    }
+
+    override suspend fun getSimilarMoviesList(movieId: Int): Flow<Resource<List<Movie>>> {
+        return flow {
+            emit(Resource.Loading(true))
+            try {
+                val response = apiService.getSimilarMoviesList(movieId) // Assuming this method exists and returns a list of movies
+                if (response.isSuccessful && response.body() != null) {
+                    emit(Resource.Success(response.body()!!.results))
+                    return@flow
+                } else {
+                    emit(Resource.Error("An error occurred: ${response.message()}"))
+                    return@flow
+                }
+            } catch (e: Exception) {
+                emit(handleErrorMessage(e))
+                e.printStackTrace()
+                return@flow
+            }
+        }
+    }
+
+
+    private fun <T> handleErrorMessage(e : Exception) : Resource<T>
+    {
+        return when (e) {
+            is IOException -> {
+                // This usually indicates a network connectivity issue (e.g., no internet connection)
+                Resource.Error("No internet")
+            }
+            is HttpException -> {
+                Resource.Error("Something went wrong")
+            }
+            else -> {
+                Resource.Error("Unknown error, Please try after some time")
             }
         }
     }
