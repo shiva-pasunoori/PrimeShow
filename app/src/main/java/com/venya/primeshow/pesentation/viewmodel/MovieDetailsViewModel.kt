@@ -3,6 +3,7 @@ package com.venya.primeshow.pesentation.viewmodel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.venya.primeshow.data.local.FavTvShow
 import com.venya.primeshow.data.model.response.Movie
 import com.venya.primeshow.domain.repository.MoviesRepository
 import com.venya.primeshow.utils.Resource
@@ -51,4 +52,18 @@ class MovieDetailsViewModel @Inject constructor(
             }
         }
     }
+
+    fun saveFavShow(favTvShow: FavTvShow)
+    {
+        viewModelScope.launch {
+            moviesRepository.saveFavShow(favTvShow)
+        }
+    }
+    fun deleteFavShow(id: Int)
+    {
+        viewModelScope.launch {
+            moviesRepository.removeFavShow(id)
+        }
+    }
+
 }

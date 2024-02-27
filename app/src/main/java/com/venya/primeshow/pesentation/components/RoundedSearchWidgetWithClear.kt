@@ -1,4 +1,4 @@
-package com.venya.primeshow.pesentation.utils.common
+package com.venya.primeshow.pesentation.components
 
 /**
  * Created by Shiva Pasunoori on 26,February,2024
@@ -27,13 +27,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.venya.primeshow.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

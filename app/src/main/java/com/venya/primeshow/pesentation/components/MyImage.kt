@@ -1,4 +1,4 @@
-package com.venya.primeshow.pesentation.utils.common
+package com.venya.primeshow.pesentation.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height

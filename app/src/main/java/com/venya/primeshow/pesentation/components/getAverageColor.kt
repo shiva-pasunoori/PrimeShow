@@ -1,4 +1,4 @@
-package com.venya.primeshow.pesentation.utils.common
+package com.venya.primeshow.pesentation.components
 
 /**
  * Created by Shiva Pasunoori on 25,February,2024

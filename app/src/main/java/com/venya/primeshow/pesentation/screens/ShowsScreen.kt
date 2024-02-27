@@ -1,4 +1,4 @@
-package com.venya.primeshow.pesentation.utils.screens
+package com.venya.primeshow.pesentation.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -8,10 +8,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -24,14 +24,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.venya.primeshow.data.local.FavTvShow
 import com.venya.primeshow.data.model.response.Movie
-import com.venya.primeshow.pesentation.utils.common.MovieCard
-import com.venya.primeshow.pesentation.utils.common.MyErrorMessage
-import com.venya.primeshow.pesentation.utils.common.MyProgressBar
-import com.venya.primeshow.pesentation.utils.common.NoInternetConnectionMessage
-import com.venya.primeshow.pesentation.utils.common.RoundedSearchWidgetWithClear
+import com.venya.primeshow.pesentation.components.MovieCard
+import com.venya.primeshow.pesentation.components.MyErrorMessage
+import com.venya.primeshow.pesentation.components.MyProgressBar
+import com.venya.primeshow.pesentation.components.NoInternetConnectionMessage
+import com.venya.primeshow.pesentation.components.RoundedSearchWidgetWithClear
 import com.venya.primeshow.pesentation.viewmodel.MovieListViewModel
 import com.venya.primeshow.utils.Resource
+import com.venya.primeshow.utils.Screen
 import com.venya.primeshow.utils.checkIfHasNetwork
 
 /**
@@ -47,6 +49,22 @@ fun ShowsScreen(navController: NavController, movieListViewModel: MovieListViewM
 
 
     val moviesResource by movieListViewModel.moviesList.collectAsState()
+    val favMoviesResource by movieListViewModel.favMoviesList.collectAsState()
+
+    val listener = remember {
+        NavController.OnDestinationChangedListener { _, destination, _ ->
+            if(destination.route.toString()== Screen.showsScreen.route){
+                movieListViewModel.fetchFavMovies()
+            }
+        }
+    }
+    DisposableEffect(Unit){
+        navController.addOnDestinationChangedListener(listener)
+        onDispose {
+            navController.removeOnDestinationChangedListener(listener)
+        }
+    }
+
 
     Surface(
         modifier = Modifier
@@ -58,7 +76,8 @@ fun ShowsScreen(navController: NavController, movieListViewModel: MovieListViewM
         MoviesListView(
             navController,
             moviesResource = moviesResource,
-            movieListViewModel
+            movieListViewModel,
+            favMoviesResource
         )
 //        when (moviesResource) {
 //            is Resource.Loading -> LoadingView()
@@ -86,7 +105,8 @@ fun LoadingView() {
 fun MoviesListView(
     navController: NavController,
     moviesResource: Resource<List<Movie>>,
-    movieListViewModel: MovieListViewModel
+    movieListViewModel: MovieListViewModel,
+    favMoviesResource: Resource<List<FavTvShow>>
 ) {
 
     var searchQuery by remember { mutableStateOf("") }
@@ -139,7 +159,13 @@ fun MoviesListView(
                     contentPadding = PaddingValues(vertical = 8.dp, horizontal = 4.dp),
                     content = {
                         items(movies.size) { index ->
-                            MovieCard(movie = movies.get(index), navController)
+                            var isFav = false
+                            val movie = movies[index]
+                            if(favMoviesResource.data?.let { isMovieAFavorite(movie, it) } == true)
+                            {
+                                isFav= true
+                            }
+                            MovieCard(movie = movies[index], navController,isFav)
                         }
                     }
                 )
@@ -158,6 +184,14 @@ fun MoviesListView(
                 )
             }
         }
+    }
+}
+
+fun isMovieAFavorite(movie: Movie, favTvShows: List<FavTvShow>): Boolean {
+    // Assuming movie.id and FavTvShow.id are the common identifiers
+    // and are sufficient for determining uniqueness.
+    return favTvShows.any { favTvShow ->
+        movie.id == favTvShow.id
     }
 }
 

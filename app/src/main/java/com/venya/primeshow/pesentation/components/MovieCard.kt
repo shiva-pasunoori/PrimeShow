@@ -1,4 +1,4 @@
-package com.venya.primeshow.pesentation.utils.common
+package com.venya.primeshow.pesentation.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.rounded.ImageNotSupported
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -48,7 +49,7 @@ import com.venya.primeshow.utils.Screen
  * Created by Shiva Pasunoori on 25,February,2024
  */
 @Composable
-fun MovieCard(movie: Movie,navController: NavController)
+fun MovieCard(movie: Movie,navController: NavController,isFav : Boolean = false)
 {
     val imageState = rememberAsyncImagePainter(
         model = ImageRequest.Builder(LocalContext.current)
@@ -86,7 +87,7 @@ fun MovieCard(movie: Movie,navController: NavController)
                     .fillMaxWidth()
                     .height(200.dp)
                     .clip(RoundedCornerShape(22.dp))
-                    .background(MaterialTheme.colorScheme.primaryContainer),
+                    .background(MaterialTheme.colorScheme.primary),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -132,7 +133,7 @@ fun MovieCard(movie: Movie,navController: NavController)
         Row (
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 16.dp, bottom = 12.dp, top = 4.dp)
+                .padding(start = 16.dp, bottom = 12.dp, top = 10.dp)
         ) {
             RatingBar(
                 starsModifier = Modifier.size(18.dp),
@@ -146,6 +147,18 @@ fun MovieCard(movie: Movie,navController: NavController)
                 color = Color.White,
                 fontSize = 15.sp,
                 maxLines = 1,
+            )
+
+            val favColor = if(isFav)
+                MaterialTheme.colorScheme.primary
+            else
+                Color.White
+
+            Icon(
+                modifier = Modifier.padding(start = 14.dp),
+                imageVector = Icons.Filled.Favorite,
+                contentDescription = "Favorite Movie", // Accessibility description
+                tint = favColor // Optional: Customize the icon color
             )
         }
     }

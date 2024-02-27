@@ -1,5 +1,7 @@
 package com.venya.primeshow.data.repository
 
+import com.venya.primeshow.data.local.FavTvShow
+import com.venya.primeshow.data.local.MovieDatabase
 import com.venya.primeshow.data.model.response.Movie
 import com.venya.primeshow.data.remote.ApiService
 import com.venya.primeshow.domain.repository.MoviesRepository
@@ -15,7 +17,7 @@ import javax.inject.Inject
  * Created by Shiva Pasunoori on 25,February,2024
  */
 
-class MoviesRepositoryImpl @Inject constructor(private val apiService: ApiService) : MoviesRepository {
+class MoviesRepositoryImpl @Inject constructor(private val movieDatabase: MovieDatabase,    private val apiService: ApiService) : MoviesRepository {
     override suspend fun getTrendingMoviesList(): Flow<Resource<List<Movie>>> {
         return flow {
             emit(Resource.Loading(true))
@@ -109,5 +111,30 @@ class MoviesRepositoryImpl @Inject constructor(private val apiService: ApiServic
                 Resource.Error("Unknown error, Please try after some time")
             }
         }
+    }
+
+    override suspend fun saveFavShow(tvShow: FavTvShow) {
+        movieDatabase.getDao().addFavShow(tvShow)
+    }
+
+    override suspend fun removeFavShow(id: Int) {
+        movieDatabase.getDao().deleteFavShow(id)
+    }
+
+    override suspend fun getFavShowList(): Flow<Resource<List<FavTvShow>>>
+    {
+        return flow {
+            emit(Resource.Loading(true))
+            try {
+                val response = movieDatabase.getDao().getFavMovies() // Assuming this method exists and returns a list of movies
+                emit(Resource.Success(response))
+                return@flow
+            } catch (e: Exception) {
+                emit(handleErrorMessage(e))
+                e.printStackTrace()
+                return@flow
+            }
+        }
+
     }
 }

@@ -1,11 +1,16 @@
 package com.venya.primeshow.domain.di
 
+import android.content.Context
+import androidx.room.Room
 import com.venya.primeshow.BuildConfig
+import com.venya.primeshow.data.local.MovieDatabase
 import com.venya.primeshow.data.remote.ApiService
+import com.venya.primeshow.utils.Constants
 import com.venya.primeshow.utils.Constants.BASE_URL
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -62,6 +67,19 @@ object AppModule {
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create()).client(client).build()
             .create(ApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAppDatabase(
+        @ApplicationContext context: Context
+    ): MovieDatabase {
+        return Room.databaseBuilder(
+            context.applicationContext,
+            MovieDatabase::class.java,
+            Constants.moviesDatabase // Use a constant or string literal for your database name
+        ).fallbackToDestructiveMigration() // Handle migrations
+            .build()
     }
 
 }

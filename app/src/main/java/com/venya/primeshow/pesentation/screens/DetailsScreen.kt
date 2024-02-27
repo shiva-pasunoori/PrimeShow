@@ -1,4 +1,4 @@
-package com.venya.primeshow.pesentation.utils.screens
+package com.venya.primeshow.pesentation.screens
 
 import android.content.Context
 import androidx.compose.foundation.Image
@@ -19,13 +19,19 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.rounded.ImageNotSupported
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,10 +49,13 @@ import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Size
 import com.venya.primeshow.R
+import com.venya.primeshow.data.local.FavTvShow
 import com.venya.primeshow.data.model.response.Movie
-import com.venya.primeshow.pesentation.utils.common.MovieCard
-import com.venya.primeshow.pesentation.utils.common.RatingBar
+import com.venya.primeshow.pesentation.components.CustomBackButton
+import com.venya.primeshow.pesentation.components.MovieCard
+import com.venya.primeshow.pesentation.components.RatingBar
 import com.venya.primeshow.pesentation.viewmodel.MovieDetailsViewModel
+import com.venya.primeshow.pesentation.viewmodel.MovieListViewModel
 import com.venya.primeshow.utils.Constants
 import com.venya.primeshow.utils.Resource
 import java.util.Locale
@@ -60,6 +69,7 @@ fun DetailsScreen(
     navController: NavHostController,
     applicationContext: Context,
     movieDetailsViewModel: MovieDetailsViewModel,
+    movieListViewModel: MovieListViewModel
 ) {
 
 
@@ -67,10 +77,19 @@ fun DetailsScreen(
 
     val similarMoviesDetailsState by movieDetailsViewModel.similarMoviesList.collectAsState()
 
+    val favMoviesListState by movieListViewModel.favMoviesList.collectAsState()
+
+
     when (moviesDetailsState) {
         is Resource.Loading -> LoadingView()
         is Resource.Success -> moviesDetailsState.data?.let {
-            detailsScreenBody(it,similarMoviesDetailsState,navController)
+            detailsScreenBody(
+                it,
+                similarMoviesDetailsState,
+                navController,
+                movieDetailsViewModel,
+                favMoviesListState
+            )
         }
 
         is Resource.Error -> ErrorView(
@@ -85,7 +104,9 @@ fun DetailsScreen(
 fun detailsScreenBody(
     movie: Movie,
     similarMoviesDetailsState: Resource<List<Movie>>,
-    navController: NavHostController
+    navController: NavHostController,
+    movieDetailsViewModel: MovieDetailsViewModel,
+    favMoviesListState: Resource<List<FavTvShow>>
 ) {
     val backDropImageState = rememberAsyncImagePainter(
         model = ImageRequest.Builder(LocalContext.current)
@@ -101,6 +122,8 @@ fun detailsScreenBody(
             .build()
     ).state
 
+    var isFav by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -108,31 +131,38 @@ fun detailsScreenBody(
             .verticalScroll(rememberScrollState())
     ) {
 
-        if (backDropImageState is AsyncImagePainter.State.Error) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(220.dp)
-                    .background(MaterialTheme.colorScheme.primaryContainer),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    modifier = Modifier.size(70.dp),
-                    imageVector = Icons.Rounded.ImageNotSupported,
-                    contentDescription = movie.title
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(220.dp)
+        ) {
+
+            if (backDropImageState is AsyncImagePainter.State.Error) {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .background(MaterialTheme.colorScheme.primary),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        modifier = Modifier.size(70.dp),
+                        imageVector = Icons.Rounded.ImageNotSupported,
+                        contentDescription = movie.title
+                    )
+                }
+            }
+
+            if (backDropImageState is AsyncImagePainter.State.Success) {
+                Image(
+                    modifier = Modifier
+                        .matchParentSize(),
+                    painter = backDropImageState.painter,
+                    contentDescription = movie.title,
+                    contentScale = ContentScale.Crop
                 )
             }
-        }
 
-        if (backDropImageState is AsyncImagePainter.State.Success) {
-            Image(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(220.dp),
-                painter = backDropImageState.painter,
-                contentDescription = movie.title,
-                contentScale = ContentScale.Crop
-            )
+            CustomBackButton(navController)
         }
 
         Spacer(modifier = Modifier.height(1.dp))
@@ -152,7 +182,7 @@ fun detailsScreenBody(
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(RoundedCornerShape(12.dp))
-                            .background(MaterialTheme.colorScheme.primaryContainer),
+                            .background(MaterialTheme.colorScheme.primary),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -207,6 +237,7 @@ fun detailsScreenBody(
                             fontSize = 14.sp,
                             maxLines = 1,
                         )
+                        Spacer(Modifier.weight(1f))
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -231,6 +262,33 @@ fun detailsScreenBody(
                         modifier = Modifier.padding(start = 16.dp),
                         text = movie.voteCount.toString() + " " + stringResource(R.string.votes)
                     )
+
+                    // Determine the icon and color based on isFav
+                    if (favMoviesListState.data?.let { isMovieAFavorite(movie, it) } == true) {
+                        isFav = true
+                    }
+                    var icon =
+                        if (isFav)  Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder
+
+                    IconButton(onClick = {
+                        // Handle icon click event here
+                        isFav = !isFav
+                        if (isFav) {
+                            val favTvShow = movieToFavTvShow(movie = movie)
+                            movieDetailsViewModel.saveFavShow(favTvShow)
+                        } else {
+                            movieDetailsViewModel.deleteFavShow(movie.id!!)
+                        }
+                    }, modifier = Modifier.padding(start = 16.dp))
+                    {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = "Favorite Movie", // Accessibility description
+                            tint = MaterialTheme.colorScheme.primary // Optional: Customize the icon color
+                        )
+                    }
+
+
                 }
             }
         }
@@ -290,6 +348,25 @@ fun detailsScreenBody(
             )
         }
     }
+}
+
+fun movieToFavTvShow(movie: Movie): FavTvShow {
+    // Determine the appropriate title/name for the TV show
+    val name = movie.name ?: movie.originalTitle ?: "Unknown Title"
+
+    // Convert the vote average to a string, handling nulls
+    val voteAverage = movie.voteAverage?.toString() ?: "0.0"
+
+    // Handle the poster path, assuming it might need a base URL
+    // Example: "https://image.tmdb.org/t/p/w500/"
+    val posterPath = movie.posterPath?.let { Constants.IMAGE_BASE_URL + it } ?: ""
+
+    return FavTvShow(
+        id = movie.id ?: 0, // Handle potential null ID
+        name = name,
+        posterPath = posterPath,
+        voteAverage = voteAverage
+    )
 }
 
 @Composable

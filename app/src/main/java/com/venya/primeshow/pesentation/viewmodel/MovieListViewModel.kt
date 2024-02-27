@@ -2,6 +2,7 @@ package com.venya.primeshow.pesentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.venya.primeshow.data.local.FavTvShow
 import com.venya.primeshow.data.model.response.Movie
 import com.venya.primeshow.domain.repository.MoviesRepository
 import com.venya.primeshow.utils.Resource
@@ -36,8 +37,12 @@ class MovieListViewModel @Inject constructor(private val moviesRepository: Movie
 
     private val _searchQuery = MutableStateFlow("")
 
+    private var _favMoviesList = MutableStateFlow<Resource<List<FavTvShow>>>(Resource.Loading())
+    val favMoviesList: StateFlow<Resource<List<FavTvShow>>> = _favMoviesList.asStateFlow()
+
     init {
         fetchTrendingMovies()
+        fetchFavMovies()
         viewModelScope.launch {
             _searchQuery
                 .filter { query -> query.length >= 3 }
@@ -56,6 +61,15 @@ class MovieListViewModel @Inject constructor(private val moviesRepository: Movie
         viewModelScope.launch {
             moviesRepository.getTrendingMoviesList().collect { moviesResource ->
                 _moviesList.value = moviesResource
+            }
+        }
+    }
+
+    fun fetchFavMovies()
+    {
+        viewModelScope.launch {
+            moviesRepository.getFavShowList().collect { moviesResource ->
+                _favMoviesList.value = moviesResource
             }
         }
     }

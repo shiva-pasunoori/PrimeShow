@@ -1,5 +1,6 @@
 package com.venya.primeshow.domain.repository
 
+import com.venya.primeshow.data.local.FavTvShow
 import com.venya.primeshow.data.model.response.Movie
 import com.venya.primeshow.utils.Resource
 import kotlinx.coroutines.flow.Flow
@@ -17,4 +18,10 @@ interface MoviesRepository {
     suspend fun searchMovies(query: String): Flow<Resource<List<Movie>>>
 
     suspend fun getSimilarMoviesList(movieId : Int): Flow<Resource<List<Movie>>>
+
+    suspend fun saveFavShow(tvShow: FavTvShow)
+
+    suspend fun removeFavShow(id: Int)
+
+    suspend fun getFavShowList(): Flow<Resource<List<FavTvShow>>>
 }
