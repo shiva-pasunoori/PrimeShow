@@ -58,6 +58,7 @@ import com.venya.primeshow.pesentation.viewmodel.MovieDetailsViewModel
 import com.venya.primeshow.pesentation.viewmodel.MovieListViewModel
 import com.venya.primeshow.utils.Constants
 import com.venya.primeshow.utils.Resource
+import com.venya.primeshow.utils.movieToFavTvShow
 import java.util.Locale
 
 /**
@@ -88,7 +89,8 @@ fun DetailsScreen(
                 similarMoviesDetailsState,
                 navController,
                 movieDetailsViewModel,
-                favMoviesListState
+                favMoviesListState,
+                movieListViewModel
             )
         }
 
@@ -106,7 +108,8 @@ fun detailsScreenBody(
     similarMoviesDetailsState: Resource<List<Movie>>,
     navController: NavHostController,
     movieDetailsViewModel: MovieDetailsViewModel,
-    favMoviesListState: Resource<List<FavTvShow>>
+    favMoviesListState: Resource<List<FavTvShow>>,
+    movieListViewModel: MovieListViewModel
 ) {
     val backDropImageState = rememberAsyncImagePainter(
         model = ImageRequest.Builder(LocalContext.current)
@@ -264,25 +267,23 @@ fun detailsScreenBody(
                     )
 
                     // Determine the icon and color based on isFav
-                    if (favMoviesListState.data?.let { isMovieAFavorite(movie, it) } == true) {
-                        isFav = true
-                    }
-                    var icon =
-                        if (isFav)  Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder
+                    isFav = favMoviesListState.data?.let { isMovieAFavorite(movie, it) } == true
+
+//                    var icon = if (isFav)  Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder
 
                     IconButton(onClick = {
                         // Handle icon click event here
                         isFav = !isFav
+                        val favTvShow = movieToFavTvShow(movie = movie)
                         if (isFav) {
-                            val favTvShow = movieToFavTvShow(movie = movie)
-                            movieDetailsViewModel.saveFavShow(favTvShow)
+                            movieListViewModel.saveFavShow(favTvShow)
                         } else {
-                            movieDetailsViewModel.deleteFavShow(movie.id!!)
+                            movieListViewModel.deleteFavShow(favTvShow)
                         }
                     }, modifier = Modifier.padding(start = 16.dp))
                     {
                         Icon(
-                            imageVector = icon,
+                            imageVector = if (isFav)  Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                             contentDescription = "Favorite Movie", // Accessibility description
                             tint = MaterialTheme.colorScheme.primary // Optional: Customize the icon color
                         )
@@ -350,38 +351,5 @@ fun detailsScreenBody(
     }
 }
 
-fun movieToFavTvShow(movie: Movie): FavTvShow {
-    // Determine the appropriate title/name for the TV show
-    val name = movie.name ?: movie.originalTitle ?: "Unknown Title"
 
-    // Convert the vote average to a string, handling nulls
-    val voteAverage = movie.voteAverage?.toString() ?: "0.0"
 
-    // Handle the poster path, assuming it might need a base URL
-    // Example: "https://image.tmdb.org/t/p/w500/"
-    val posterPath = movie.posterPath?.let { Constants.IMAGE_BASE_URL + it } ?: ""
-
-    return FavTvShow(
-        id = movie.id ?: 0, // Handle potential null ID
-        name = name,
-        posterPath = posterPath,
-        voteAverage = voteAverage
-    )
-}
-
-@Composable
-fun similarMoviesList(movies: List<Movie>, navController: NavHostController) {
-
-    LazyRow(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.onSecondary),
-
-        contentPadding = PaddingValues(vertical = 8.dp, horizontal = 4.dp),
-        content = {
-            items(movies.size) { index ->
-                MovieCard(movie = movies[index], navController)
-            }
-        }
-    )
-}

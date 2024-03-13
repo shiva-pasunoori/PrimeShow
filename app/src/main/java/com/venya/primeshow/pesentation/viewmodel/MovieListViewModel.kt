@@ -82,4 +82,30 @@ class MovieListViewModel @Inject constructor(private val moviesRepository: Movie
             }
         }
     }
+
+    fun saveFavShow(favTvShow: FavTvShow)
+    {
+        viewModelScope.launch {
+            moviesRepository.saveFavShow(favTvShow)
+            val currentList = _favMoviesList.value.data.orEmpty()
+            val updatedList = currentList.toMutableList().apply {
+                add(favTvShow)
+            }
+
+            _favMoviesList.value = Resource.Success(updatedList)
+        }
+    }
+    fun deleteFavShow(favTvShow: FavTvShow)
+    {
+        viewModelScope.launch {
+            moviesRepository.removeFavShow(favTvShow.id)
+            val currentList = _favMoviesList.value.data.orEmpty()
+            val updatedList = currentList.toMutableList().apply {
+                remove(favTvShow)
+            }
+            _favMoviesList.value = Resource.Success(updatedList)
+        }
+    }
+
+
 }

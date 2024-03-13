@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -103,16 +104,28 @@ fun MovieCard(movie: Movie,navController: NavController,isFav : Boolean = false)
                 imageBitmap = imageState.result.drawable.toBitmap().asImageBitmap()
             )
 
-            Image(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(6.dp)
-                    .height(200.dp)
-                    .clip(RoundedCornerShape(22.dp)),
-                painter = imageState.painter,
-                contentDescription = movie.title,
-                contentScale = ContentScale.Crop
-            )
+            Box(modifier = Modifier.wrapContentSize()){
+
+                Image(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(6.dp)
+                        .height(200.dp)
+                        .clip(RoundedCornerShape(22.dp)),
+                    painter = imageState.painter,
+                    contentDescription = movie.title,
+                    contentScale = ContentScale.Crop
+                )
+
+                if(isFav)
+                    Icon(
+                        modifier = Modifier.padding(14.dp).align(Alignment.TopEnd),
+                        imageVector = Icons.Filled.Favorite,
+                        contentDescription = "Favorite Movie", // Accessibility description
+                        tint =   MaterialTheme.colorScheme.primary // Optional: Customize the icon color
+                    )
+            }
+
         }
 
         Spacer(modifier = Modifier.height(6.dp))
@@ -149,17 +162,6 @@ fun MovieCard(movie: Movie,navController: NavController,isFav : Boolean = false)
                 maxLines = 1,
             )
 
-            val favColor = if(isFav)
-                MaterialTheme.colorScheme.primary
-            else
-                Color.White
-
-            Icon(
-                modifier = Modifier.padding(start = 14.dp),
-                imageVector = Icons.Filled.Favorite,
-                contentDescription = "Favorite Movie", // Accessibility description
-                tint = favColor // Optional: Customize the icon color
-            )
         }
     }
 }

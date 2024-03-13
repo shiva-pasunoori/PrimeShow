@@ -21,7 +21,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.venya.primeshow.pesentation.screens.DetailsScreen
-import com.venya.primeshow.pesentation.screens.ShowsScreen
+import com.venya.primeshow.pesentation.screens.MoviesListScreen
 import com.venya.primeshow.pesentation.ui.theme.PrimeShowTheme
 import com.venya.primeshow.pesentation.viewmodel.MovieDetailsViewModel
 import com.venya.primeshow.pesentation.viewmodel.MovieListViewModel
@@ -62,7 +62,7 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                         ) {
-                            ShowsScreen(
+                            MoviesListScreen(
                                 navController = navController,
                                 movieListViewModel = movieListViewModel
                             )
